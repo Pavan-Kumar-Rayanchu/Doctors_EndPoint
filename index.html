@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samastham Connect</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; background-color: #f4f4f9; padding: 20px; min-height: 100vh; }
+        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 500px; text-align: center; height: fit-content; }
+        
+        /* Form Elements */
+        input { width: 90%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { width: 100%; padding: 10px; margin-top: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button.secondary { background-color: #6c757d; margin-top: 5px; }
+        button.info { background-color: #17a2b8; margin-bottom: 15px; } 
+        button.delete { background-color: #dc3545; width: auto; padding: 5px 10px; font-size: 12px; margin: 0; }
+        button:hover { opacity: 0.9; }
+
+        /* Utility Classes */
+        .hidden { display: none; }
+        .error { color: red; font-size: 14px; margin-top: 10px; }
+        .success { color: green; font-size: 14px; margin-top: 10px; }
+        
+        /* Headings */
+        h2 { margin-bottom: 5px; color: #2c3e50; }
+        .subtitle { color: #7f8c8d; font-size: 16px; margin-bottom: 25px; margin-top: 0; }
+        h3 { margin-bottom: 10px; color: #333; }
+        
+        /* Form & List Sections */
+        .form-section { text-align: left; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+        label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-top: 5px; }
+        
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Samastham Connect</h2>
+        <p class="subtitle">Doctors Login Page</p>
+
+        <div id="step1">
+            <p>Enter Admin Phone Number</p>
+            <input type="text" id="phoneInput" placeholder="e.g. 7416974772" value="7416974772">
+            <button onclick="sendOtp()">Send OTP</button>
+        </div>
+
+        <div id="step2" class="hidden">
+            <p>Enter OTP (Check Server Console)</p>
+            <input type="text" id="otpInput" placeholder="Enter 6-digit OTP">
+            <button onclick="verifyOtp()">Verify & Login</button>
+        </div>
+
+        <div id="dashboard" class="hidden">
+            <h3 style="color:green">Login Successful!</h3>
+            
+            <div class="form-section">
+                <h3>Register New Doctor</h3>
+                <label>Doctor ID</label>
+                <input type="text" id="docId" placeholder="DOC-001">
+                <label>Full Name</label>
+                <input type="text" id="docName" placeholder="Dr. Smith">
+                <label>Experience</label>
+                <input type="text" id="docExp" placeholder="e.g. 5 Years">
+                <label>City</label>
+                <input type="text" id="docCity" placeholder="e.g. New York">
+                <button onclick="registerDoctor()">Save Doctor</button>
+            </div>
+
+            <div class="form-section">
+                <h3>Current Doctors</h3>
+                <button id="toggleBtn" class="info" onclick="toggleDoctors()">Show Saved Doctors</button>
+                
+                <div id="loadingText" class="hidden">Loading...</div>
+                <table id="docTable" class="hidden">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <button class="secondary" onclick="logout()">Logout</button>
+        </div>
+
+        <p id="message" class="error"></p>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:3000/api";
+        let authToken = "";
+
+        async function sendOtp() {
+            const phone = document.getElementById('phoneInput').value;
+            updateMsg("Sending...", "black");
+            try {
+                const res = await fetch(`${API_URL}/auth/step1`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: phone })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('step1').classList.add('hidden');
+                    document.getElementById('step2').classList.remove('hidden');
+                    updateMsg("OTP Sent! Check server terminal.", "green");
+                } else updateMsg(data.message, "red");
+            } catch (err) { updateMsg("Server Error", "red"); }
+        }
+
+        async function verifyOtp() {
+            const otp = document.getElementById('otpInput').value;
+            try {
+                const res = await fetch(`${API_URL}/auth/step2`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ otp: otp })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    authToken = data.token; // Store JWT Token
+                    document.getElementById('step2').classList.add('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    updateMsg("", "green");
+                } else updateMsg(data.message, "red");
+            } catch (err) { updateMsg("Verification Failed", "red"); }
+        }
+
+        // Toggle function to handle Show/Hide logic
+        function toggleDoctors() {
+            const table = document.getElementById('docTable');
+            const btn = document.getElementById('toggleBtn');
+            const loading = document.getElementById('loadingText');
+
+            if (table.classList.contains('hidden')) {
+                loading.classList.remove('hidden');
+                fetchDoctors();
+                btn.innerText = "Hide Saved Doctors";
+            } else {
+                table.classList.add('hidden');
+                btn.innerText = "Show Saved Doctors";
+            }
+        }
+
+        async function registerDoctor() {
+            const docData = {
+                DoctorID: document.getElementById('docId').value,
+                Name: document.getElementById('docName').value,
+                Experience: document.getElementById('docExp').value,
+                Address: { City: document.getElementById('docCity').value }
+            };
+            try {
+                const res = await fetch(`${API_URL}/doctors/register`, {
+                    method: 'POST',
+                    // Updated Header for JWT
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${authToken}` 
+                    },
+                    body: JSON.stringify(docData)
+                });
+                if (res.status === 201) {
+                    updateMsg("Doctor Registered!", "green");
+                    document.getElementById('docId').value = "";
+                    document.getElementById('docName').value = "";
+                    
+                    // Only refresh if table is visible
+                    if(!document.getElementById('docTable').classList.contains('hidden')) {
+                        fetchDoctors(); 
+                    }
+                } else {
+                    const errData = await res.json();
+                    updateMsg(errData.message || "Failed to register.", "red");
+                }
+            } catch (err) { updateMsg("Error connecting to server", "red"); }
+        }
+
+        async function fetchDoctors() {
+            try {
+                const res = await fetch(`${API_URL}/doctors`);
+                const docs = await res.json();
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = ""; 
+                
+                docs.forEach(doc => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${doc.DoctorID || '-'}</td>
+                        <td>${doc.Name || 'Unknown'}</td>
+                        <td><button class="delete" onclick="deleteDoctor('${doc.DoctorID}')">Delete</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('loadingText').classList.add('hidden');
+                document.getElementById('docTable').classList.remove('hidden');
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteDoctor(id) {
+            if(!confirm("Are you sure?")) return;
+            try {
+                await fetch(`${API_URL}/doctors/${id}`, {
+                    method: 'DELETE',
+                    // Updated Header for JWT
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                fetchDoctors();
+            } catch (err) { alert("Delete failed"); }
+        }
+
+        function updateMsg(text, color) {
+            const msg = document.getElementById('message');
+            msg.innerText = text;
+            msg.style.color = color;
+            msg.className = color === "red" ? "error" : "success";
+        }
+
+        function logout() { location.reload(); }
+    </script>
+
+</body>
+</html>
