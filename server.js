@@ -219,4 +219,6 @@ app.delete('/api/doctors/:id', authenticateToken, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}...`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}...`);
+});
