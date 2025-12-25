@@ -3,47 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samastham Connect</title>
+    <title>Doctors Portal</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; background-color: #f4f4f9; padding: 20px; min-height: 100vh; }
-        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 500px; text-align: center; height: fit-content; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; background-color: #f0f2f5; padding: 20px; min-height: 100vh; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 600px; text-align: center; height: fit-content; }
         
         /* Form Elements */
-        input { width: 90%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; }
-        button { width: 100%; padding: 10px; margin-top: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        input, textarea { width: 100%; box-sizing: border-box; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        input:focus, textarea:focus { border-color: #28a745; outline: none; }
+        
+        button { width: 100%; padding: 12px; margin-top: 10px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; transition: background 0.3s; }
         button.secondary { background-color: #6c757d; margin-top: 5px; }
         button.info { background-color: #17a2b8; margin-bottom: 15px; } 
-        button.delete { background-color: #dc3545; width: auto; padding: 5px 10px; font-size: 12px; margin: 0; }
+        button.warning { background-color: #ffc107; color: #333; margin-bottom: 10px; }
+        button.delete { background-color: #dc3545; width: auto; padding: 6px 12px; font-size: 13px; margin: 0; }
         button:hover { opacity: 0.9; }
 
         /* Utility Classes */
         .hidden { display: none; }
-        .error { color: red; font-size: 14px; margin-top: 10px; }
-        .success { color: green; font-size: 14px; margin-top: 10px; }
+        .error { color: #dc3545; font-size: 14px; margin-top: 10px; font-weight: bold; }
+        .success { color: #28a745; font-size: 14px; margin-top: 10px; font-weight: bold; }
         
         /* Headings */
         h2 { margin-bottom: 5px; color: #2c3e50; }
         .subtitle { color: #7f8c8d; font-size: 16px; margin-bottom: 25px; margin-top: 0; }
-        h3 { margin-bottom: 10px; color: #333; }
+        h3 { margin-bottom: 15px; color: #333; text-align: left; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h4 { margin: 10px 0 5px 0; text-align: left; color: #555; font-size: 14px; }
         
-        /* Form & List Sections */
-        .form-section { text-align: left; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
-        label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-top: 5px; }
+        /* Form Layout */
+        .form-section { text-align: left; margin-top: 20px; padding-top: 10px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full-width { grid-column: span 2; }
+        label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 2px; }
         
         /* Table Styles */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
         th { background-color: #f8f9fa; color: #333; }
+        tr:last-child td { border-bottom: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Samastham Connect</h2>
-        <p class="subtitle">Doctors Login Page</p>
+        <h2>Doctors Portal</h2>
+        <p class="subtitle">Doctor's Portal</p>
 
         <div id="step1">
-            <p>Enter Admin Phone Number</p>
+            <p>Enter Phone Number</p>
             <input type="text" id="phoneInput" placeholder="e.g. 7416974772" value="7416974772">
             <button onclick="sendOtp()">Send OTP</button>
         </div>
@@ -55,36 +63,111 @@
         </div>
 
         <div id="dashboard" class="hidden">
-            <h3 style="color:green">Login Successful!</h3>
+            <h3 style="color:green; text-align:center; border:none;">Login Successful!</h3>
             
             <div class="form-section">
-                <h3>Register New Doctor</h3>
-                <label>Doctor ID</label>
-                <input type="text" id="docId" placeholder="DOC-001">
-                <label>Full Name</label>
-                <input type="text" id="docName" placeholder="Dr. Smith">
-                <label>Experience</label>
-                <input type="text" id="docExp" placeholder="e.g. 5 Years">
-                <label>City</label>
-                <input type="text" id="docCity" placeholder="e.g. New York">
-                <button onclick="registerDoctor()">Save Doctor</button>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Register New Doctor</h3>
+                    <button class="warning" style="width:auto; padding: 5px 15px; font-size:12px;" onclick="fillDemoData()">Auto-Fill Demo Data</button>
+                </div>
+                
+                <div class="form-grid">
+                    <div>
+                        <label>Doctor ID*</label>
+                        <input type="text" id="docId" placeholder="DOC-001">
+                    </div>
+                    <div>
+                        <label>Full Name*</label>
+                        <input type="text" id="docName" placeholder="Dr. John Doe">
+                    </div>
+
+                    <div>
+                        <label>Email*</label>
+                        <input type="email" id="docEmail" placeholder="doctor@email.com">
+                    </div>
+                    <div>
+                        <label>Phone Number*</label>
+                        <input type="text" id="docPhone" placeholder="9876543210">
+                    </div>
+
+                    <div>
+                        <label>Specialization*</label>
+                        <input type="text" id="docSpec" placeholder="e.g. Cardiologist">
+                    </div>
+                    <div>
+                        <label>Qualification*</label>
+                        <input type="text" id="docQual" placeholder="e.g. MBBS, MD">
+                    </div>
+
+                    <div>
+                        <label>Registration No.*</label>
+                        <input type="text" id="docReg" placeholder="MED-12345">
+                    </div>
+                    <div>
+                        <label>Experience*</label>
+                        <input type="text" id="docExp" placeholder="e.g. 10 Years">
+                    </div>
+
+                    <div>
+                        <label>Fees (₹)*</label>
+                        <input type="number" id="docFees" placeholder="500">
+                    </div>
+                    <div>
+                        <label>Timings*</label>
+                        <input type="text" id="docTime" placeholder="Mon-Sat 10AM-5PM">
+                    </div>
+                </div>
+
+                <h4>Clinic Details</h4>
+                <div class="form-grid">
+                    <div class="full-width">
+                        <label>Clinic Name*</label>
+                        <input type="text" id="docClinic" placeholder="City Care Clinic">
+                    </div>
+                    <div>
+                        <label>City/Place*</label>
+                        <input type="text" id="docCity" placeholder="Hyderabad">
+                    </div>
+                    <div>
+                        <label>Street</label>
+                        <input type="text" id="docStreet" placeholder="Main Road">
+                    </div>
+                    <div>
+                        <label>State</label>
+                        <input type="text" id="docState" placeholder="Telangana">
+                    </div>
+                    <div>
+                        <label>Zip Code</label>
+                        <input type="text" id="docZip" placeholder="500001">
+                    </div>
+                </div>
+
+                <label>Bio / Description</label>
+                <textarea id="docBio" rows="2" placeholder="Brief description..."></textarea>
+
+                <button onclick="registerDoctor()">Save Doctor Details</button>
             </div>
 
             <div class="form-section">
-                <h3>Current Doctors</h3>
+                <h3>Registered Doctors</h3>
                 <button id="toggleBtn" class="info" onclick="toggleDoctors()">Show Saved Doctors</button>
                 
                 <div id="loadingText" class="hidden">Loading...</div>
-                <table id="docTable" class="hidden">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
+                <div class="table-wrapper">
+                    <table id="docTable" class="hidden">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Specialization</th>
+                                <th>City</th>
+                                <th>Fees</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
             </div>
 
             <button class="secondary" onclick="logout()">Logout</button>
@@ -97,6 +180,7 @@
         const API_URL = "http://localhost:3000/api";
         let authToken = "";
 
+        // --- AUTH FUNCTIONS ---
         async function sendOtp() {
             const phone = document.getElementById('phoneInput').value;
             updateMsg("Sending...", "black");
@@ -125,7 +209,7 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    authToken = data.token; // Store JWT Token
+                    authToken = data.token; 
                     document.getElementById('step2').classList.add('hidden');
                     document.getElementById('dashboard').classList.remove('hidden');
                     updateMsg("", "green");
@@ -133,7 +217,29 @@
             } catch (err) { updateMsg("Verification Failed", "red"); }
         }
 
-        // Toggle function to handle Show/Hide logic
+        // --- NEW: AUTO-FILL DEMO DATA FUNCTION ---
+        function fillDemoData() {
+            const randomId = Math.floor(Math.random() * 1000);
+            document.getElementById('docId').value = "DOC-" + randomId;
+            document.getElementById('docName').value = "Dr. Amit Sharma";
+            document.getElementById('docEmail').value = `amit${randomId}@hospital.com`;
+            document.getElementById('docPhone').value = "9876543210";
+            document.getElementById('docSpec').value = "Cardiologist";
+            document.getElementById('docQual').value = "MBBS, MD (Cardiology)";
+            document.getElementById('docReg').value = "MED-" + randomId + "X";
+            document.getElementById('docExp').value = "12 Years";
+            document.getElementById('docFees').value = "800";
+            document.getElementById('docTime').value = "Mon-Fri 09:00 AM - 05:00 PM";
+            document.getElementById('docClinic').value = "Sunshine Heart Care";
+            document.getElementById('docCity').value = "Hyderabad";
+            document.getElementById('docStreet').value = "Jubilee Hills Rd 10";
+            document.getElementById('docState').value = "Telangana";
+            document.getElementById('docZip').value = "500033";
+            document.getElementById('docBio').value = "Senior cardiologist with over a decade of experience in treating heart conditions.";
+            updateMsg("Demo Data Filled!", "green");
+        }
+
+        // --- DOCTOR FUNCTIONS ---
         function toggleDoctors() {
             const table = document.getElementById('docTable');
             const btn = document.getElementById('toggleBtn');
@@ -150,36 +256,60 @@
         }
 
         async function registerDoctor() {
+            // Collect all data matching the Mongoose Schema
             const docData = {
                 DoctorID: document.getElementById('docId').value,
                 Name: document.getElementById('docName').value,
+                Email: document.getElementById('docEmail').value,
+                Phone: document.getElementById('docPhone').value,
+                Specialization: document.getElementById('docSpec').value,
+                Qualification: document.getElementById('docQual').value,
+                RegistrationNumber: document.getElementById('docReg').value,
                 Experience: document.getElementById('docExp').value,
-                Address: { City: document.getElementById('docCity').value }
+                ConsultationFees: document.getElementById('docFees').value,
+                Timings: document.getElementById('docTime').value,
+                Bio: document.getElementById('docBio').value,
+                Address: {
+                    ClinicName: document.getElementById('docClinic').value,
+                    City: document.getElementById('docCity').value,
+                    Street: document.getElementById('docStreet').value,
+                    State: document.getElementById('docState').value,
+                    ZipCode: document.getElementById('docZip').value
+                }
             };
+
+            updateMsg("Saving...", "black");
+
             try {
                 const res = await fetch(`${API_URL}/doctors/register`, {
                     method: 'POST',
-                    // Updated Header for JWT
                     headers: { 
                         'Content-Type': 'application/json', 
                         'Authorization': `Bearer ${authToken}` 
                     },
                     body: JSON.stringify(docData)
                 });
+                
+                const data = await res.json();
+
                 if (res.status === 201) {
-                    updateMsg("Doctor Registered!", "green");
-                    document.getElementById('docId').value = "";
-                    document.getElementById('docName').value = "";
-                    
-                    // Only refresh if table is visible
+                    updateMsg("Doctor Registered Successfully!", "green");
+                    clearForm();
+                    // Refresh table if currently shown
                     if(!document.getElementById('docTable').classList.contains('hidden')) {
                         fetchDoctors(); 
                     }
                 } else {
-                    const errData = await res.json();
-                    updateMsg(errData.message || "Failed to register.", "red");
+                    let errorMsg = data.message;
+                    if(Array.isArray(data.message)) {
+                         errorMsg = data.message[0]; 
+                    }
+                    updateMsg(errorMsg || "Failed to register.", "red");
                 }
-            } catch (err) { updateMsg("Error connecting to server", "red"); }
+            } catch (err) { 
+                updateMsg("Error connecting to server", "red"); 
+                console.error(err);
+            }
         }
 
         async function fetchDoctors() {
@@ -191,9 +321,14 @@
                 
                 docs.forEach(doc => {
                     const tr = document.createElement('tr');
+                    const city = doc.Address ? doc.Address.City : '-';
+                    
                     tr.innerHTML = `
                         <td>${doc.DoctorID || '-'}</td>
                         <td>${doc.Name || 'Unknown'}</td>
+                        <td>${doc.Specialization || '-'}</td>
+                        <td>${city}</td>
+                        <td>₹${doc.ConsultationFees || '0'}</td>
                         <td><button class="delete" onclick="deleteDoctor('${doc.DoctorID}')">Delete</button></td>
                     `;
                     tbody.appendChild(tr);
@@ -205,15 +340,25 @@
         }
 
         async function deleteDoctor(id) {
-            if(!confirm("Are you sure?")) return;
+            if(!confirm("Are you sure you want to delete this doctor?")) return;
             try {
                 await fetch(`${API_URL}/doctors/${id}`, {
                     method: 'DELETE',
-                    // Updated Header for JWT
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 fetchDoctors();
+                updateMsg("Doctor deleted.", "green");
             } catch (err) { alert("Delete failed"); }
+        }
+
+        // --- UTILS ---
+        function clearForm() {
+            const ids = [
+                'docId', 'docName', 'docEmail', 'docPhone', 'docSpec', 
+                'docQual', 'docReg', 'docExp', 'docFees', 'docTime', 
+                'docBio', 'docClinic', 'docCity', 'docStreet', 'docState', 'docZip'
+            ];
+            ids.forEach(id => document.getElementById(id).value = "");
         }
 
         function updateMsg(text, color) {
